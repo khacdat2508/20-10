@@ -1,0 +1,673 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Chúc mừng ngày Phụ nữ Việt Nam 20/10: chạm xuống khu vườn để trồng một bông hoa và nhận lời chúc.">
+<meta property="og:title" content="Chúc mừng 20·10">
+<meta property="og:description" content="Trồng một bông hoa, nhận một lời chúc dành riêng cho bạn.">
+<title>Chúc mừng 20·10</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@500;600&family=Cormorant+Garamond:ital,wght@1,500;1,600&display=swap">
+<style>
+/* Layout: one full-screen garden at dawn — sky on top, meadow below; tap the meadow to grow a flower and receive a wish. */
+:root{
+  --ink:#3a2235;
+  --ink-soft:#6d5368;
+  --rose:#d6336c;
+  --leaf:#3f7a3c;
+  --card:rgba(255,255,255,.82);
+  --sky:#f6e3ea;
+
+  --f-display:"Cormorant Garamond","Times New Roman",serif;
+  --f-body:"Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{
+  background:var(--sky);
+  color:var(--ink);
+  font-family:var(--f-body);
+  overflow:hidden;
+}
+.garden{
+  position:relative;
+  height:100%;
+  min-height:440px;
+  overflow:hidden;
+}
+#garden{
+  position:absolute;inset:0;
+  width:100%;height:100%;
+  display:block;
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+}
+#garden:focus-visible{outline:2px solid var(--rose);outline-offset:-4px}
+.head{
+  position:absolute;top:0;left:0;right:0;
+  max-width:1120px;margin-inline:auto;
+  padding-block:clamp(24px,6vh,56px) 0;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+  pointer-events:none;
+}
+.title{
+  margin:0;
+  display:grid;gap:2px;
+  font-family:var(--f-display);
+  font-style:italic;font-weight:500;
+  color:var(--ink);
+}
+.title .pre{font-size:clamp(1.7rem,4.4vw,2.6rem);line-height:1.1;color:var(--ink-soft)}
+.title .date{font-size:clamp(4.2rem,14vw,8.5rem);line-height:.86;letter-spacing:-.02em}
+.title .sep{color:var(--rose);padding-inline:.04em}
+.lede{
+  margin:14px 0 0;
+  max-width:26ch;
+  font-size:clamp(.95rem,1.8vw,1.1rem);
+  font-weight:500;
+  line-height:1.45;
+  color:var(--rose);
+  text-wrap:balance;
+}
+.wish{
+  position:absolute;left:0;right:0;
+  top:50%;
+  transform:translateY(-50%);
+  width:min(34rem,calc(100% - 32px));
+  margin-inline:auto;
+  padding:20px 26px 22px;
+  border:1px solid rgba(214,51,108,.25);
+  border-radius:16px;
+  background:var(--card);
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+  box-shadow:0 18px 40px -18px rgba(58,34,53,.45);
+  text-align:center;
+  pointer-events:none;
+}
+.wish-label{
+  margin:0 0 6px;
+  display:flex;justify-content:center;align-items:center;gap:8px;
+  font-size:.72rem;font-weight:600;
+  letter-spacing:.18em;text-transform:uppercase;
+  color:var(--rose);
+}
+.wish-dot{width:10px;height:10px;border-radius:50%;background:var(--rose);flex:none}
+.wish-text{
+  margin:0;
+  font-family:var(--f-display);
+  font-style:italic;font-weight:600;
+  font-size:clamp(1.4rem,3.4vw,1.8rem);
+  line-height:1.3;
+  color:var(--ink);
+  text-wrap:balance;
+}
+.wish.pop{animation:pop .6s cubic-bezier(.2,.9,.3,1.2)}
+.wish.out{animation:out .5s ease forwards}
+@keyframes pop{from{opacity:0;transform:translateY(calc(-50% + 14px)) scale(.96)}to{opacity:1;transform:translateY(-50%)}}
+@keyframes out{from{opacity:1;transform:translateY(-50%)}to{opacity:0;transform:translateY(calc(-50% - 10px))}}
+.hint{
+  position:absolute;left:0;right:0;
+  bottom:calc(18px + env(safe-area-inset-bottom,0px));
+  margin:0;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;flex-wrap:wrap;justify-content:center;gap:4px 14px;
+  font-size:.82rem;font-weight:500;
+  color:#fff;
+  text-shadow:0 1px 6px rgba(20,50,20,.6);
+  pointer-events:none;
+  text-align:center;
+}
+.hint .count{font-variant-numeric:tabular-nums;font-weight:600}
+@media (prefers-reduced-motion:reduce){.wish.pop,.wish.out{animation:none}}
+</style>
+</head>
+<body>
+<main class="garden">
+  <canvas id="garden" tabindex="0" role="button" aria-label="Khu vườn. Chạm xuống bãi cỏ hoặc nhấn Enter để trồng một bông hoa và nhận lời chúc."></canvas>
+  <div class="head">
+    <h1 class="title"><span class="pre">Chúc mừng</span> <span class="date">20<span class="sep">·</span>10</span></h1>
+    <p class="lede">Chạm xuống vườn để trồng một bông hoa và nhận lời chúc dành riêng cho bạn.</p>
+  </div>
+  <div class="wish" id="wish" role="status" hidden>
+    <p class="wish-label"><span class="wish-dot" id="wish-dot"></span><span id="wish-name"></span></p>
+    <p class="wish-text" id="wish-text"></p>
+  </div>
+  <p class="hint"><span id="hint">Chạm vào bãi cỏ để trồng hoa</span><span class="count" id="count"></span></p>
+</main>
+
+<script>
+(() => {
+  "use strict";
+
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem("vh2010:" + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem("vh2010:" + k, JSON.stringify(v)); } catch (e) {} }
+  };
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const canvas = document.getElementById("garden");
+  const ctx = canvas.getContext("2d");
+  const TAU = Math.PI * 2;
+  const BODY_FONT = '"Be Vietnam Pro", system-ui, sans-serif';
+  const rand = (a, b) => a + Math.random() * (b - a);
+  const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const easeOutBack = x => { const c = 1.5; return 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2); };
+  const easeOut = x => 1 - Math.pow(1 - x, 3);
+
+  /* ================= Flowers & wishes ================= */
+  const TYPES = {
+    rose: {
+      name: "Hoa hồng", dot: "#d6336c",
+      colors: [
+        { out: "#e64980", mid: "#d6336c", in: "#a61e4d", line: "#87163f" },
+        { out: "#ff8787", mid: "#fa5252", in: "#c92a2a", line: "#a51d1d" },
+        { out: "#fcc2d7", mid: "#f783ac", in: "#e64980", line: "#c2255c" }
+      ],
+      wishes: [
+        ["Được yêu thương", "Chúc bạn luôn được yêu thương thật nhiều, như hoa hồng chẳng bao giờ thiếu người nâng niu."],
+        ["Ngập tràn hoa", "Chúc bạn một ngày 20/10 ngập tràn hoa và những lời thương chân thành."],
+        ["Trái tim ấm áp", "Chúc trái tim bạn luôn ấm áp, được yêu và biết yêu thương chính mình."]
+      ]
+    },
+    daisy: {
+      name: "Cúc họa mi", dot: "#f4c430",
+      colors: [{ p: "#ffffff", c: "#f4c430", d: "#d9a400" }],
+      wishes: [
+        ["Bình yên", "Chúc bạn những ngày bình yên, trong trẻo như cúc họa mi đầu đông Hà Nội."],
+        ["Mãi hồn nhiên", "Chúc bạn luôn giữ được nét hồn nhiên và nụ cười trong veo của mình."],
+        ["Ngủ thật ngon", "Chúc bạn sống nhẹ nhàng, ít lo âu, và tối nào cũng ngủ thật ngon."]
+      ]
+    },
+    tulip: {
+      name: "Tulip", dot: "#fa5252",
+      colors: [
+        { a: "#ff8787", b: "#e03131" },
+        { a: "#ffc078", b: "#e8590c" },
+        { a: "#fcc2d7", b: "#d6336c" },
+        { a: "#ffe066", b: "#f08c00" }
+      ],
+      wishes: [
+        ["Hạnh phúc trọn vẹn", "Chúc bạn hạnh phúc trọn vẹn, có người thương bên cạnh và niềm vui đầy tay."],
+        ["Luôn xinh đẹp", "Chúc bạn luôn xinh đẹp, duyên dáng và thật tự tin với chính mình."],
+        ["Ước mơ nở hoa", "Chúc mọi điều bạn mong năm nay đều nở hoa đúng hẹn."]
+      ]
+    },
+    sunflower: {
+      name: "Hướng dương", dot: "#f59f00",
+      colors: [{ p: "#fab005", p2: "#f08c00", c: "#6b3e1f", d: "#9c6b3a" }],
+      wishes: [
+        ["Lạc quan, rạng rỡ", "Chúc bạn luôn hướng về phía mặt trời, lạc quan và rạng rỡ mỗi ngày."],
+        ["Công việc thuận lợi", "Chúc công việc của bạn thuận lợi, cố gắng nào cũng được đền đáp xứng đáng."],
+        ["Tràn đầy năng lượng", "Chúc bạn tràn đầy năng lượng để làm mọi điều mình yêu thích."]
+      ]
+    },
+    cosmos: {
+      name: "Cánh bướm", dot: "#e64980",
+      colors: [
+        { p: "#f783ac", c: "#f4c430" },
+        { p: "#da77f2", c: "#f4c430" },
+        { p: "#fff0f6", c: "#f4c430" },
+        { p: "#e64980", c: "#ffd43b" }
+      ],
+      wishes: [
+        ["Vui tươi mỗi ngày", "Chúc bạn một năm vui tươi, ngày nào cũng có một điều nhỏ khiến bạn mỉm cười."],
+        ["Mạnh khỏe, an yên", "Chúc bạn mạnh khỏe, an yên, và luôn có người thân yêu ở bên."],
+        ["Vạn sự như ý", "Chúc bạn vạn sự như ý, cầu gì được nấy, mong gì cũng thành."]
+      ]
+    }
+  };
+  const TYPE_KEYS = Object.keys(TYPES);
+
+  // shuffled bag of (type, wish) so wishes don't repeat until all are seen
+  let bag = [];
+  const nextGift = () => {
+    if (!bag.length) {
+      TYPE_KEYS.forEach(k => TYPES[k].wishes.forEach(([short, wish]) => bag.push({ type: k, wish, short })));
+      bag.sort(() => Math.random() - .5);
+    }
+    return bag.pop();
+  };
+  const giftOf = k => { const [short, wish] = pick(TYPES[k].wishes); return { type: k, wish, short }; };
+
+  function ell(x, y, rx, ry, rot) { ctx.beginPath(); ctx.ellipse(x, y, rx, ry, rot, 0, TAU); ctx.fill(); }
+
+  function drawHead(type, c, R) {
+    if (type === "rose") {
+      ctx.fillStyle = c.out;
+      for (let i = 0; i < 5; i++) { const a = i * TAU / 5 + .3; ell(Math.cos(a) * R * .42, Math.sin(a) * R * .42, R * .55, R * .47, a); }
+      ctx.fillStyle = c.mid;
+      for (let i = 0; i < 5; i++) { const a = i * TAU / 5 + .95; ell(Math.cos(a) * R * .2, Math.sin(a) * R * .2, R * .38, R * .32, a); }
+      ctx.fillStyle = c.in; ell(0, 0, R * .3, R * .3, 0);
+      ctx.strokeStyle = c.line; ctx.lineWidth = Math.max(.6, R * .06); ctx.lineCap = "round";
+      ctx.beginPath(); ctx.arc(0, 0, R * .2, .2, 4.4); ctx.stroke();
+      ctx.beginPath(); ctx.arc(R * .03, R * .02, R * .1, 2.2, 6.6); ctx.stroke();
+    } else if (type === "daisy") {
+      ctx.fillStyle = c.p;
+      ctx.strokeStyle = "rgba(60,40,60,.10)"; ctx.lineWidth = Math.max(.4, R * .02);
+      for (let i = 0; i < 16; i++) {
+        const a = i * TAU / 16;
+        ctx.beginPath(); ctx.ellipse(Math.cos(a) * R * .56, Math.sin(a) * R * .56, R * .46, R * .12, a, 0, TAU); ctx.fill(); ctx.stroke();
+      }
+      ctx.fillStyle = c.c; ell(0, 0, R * .26, R * .26, 0);
+      ctx.fillStyle = c.d;
+      for (let i = 0; i < 7; i++) { const a = i * 2.4; ell(Math.cos(a) * R * .13, Math.sin(a) * R * .13, R * .035, R * .035, 0); }
+    } else if (type === "sunflower") {
+      ctx.fillStyle = c.p2;
+      for (let i = 0; i < 16; i++) { const a = i * TAU / 16 + .2; ell(Math.cos(a) * R * .62, Math.sin(a) * R * .62, R * .42, R * .14, a); }
+      ctx.fillStyle = c.p;
+      for (let i = 0; i < 16; i++) { const a = i * TAU / 16; ell(Math.cos(a) * R * .6, Math.sin(a) * R * .6, R * .42, R * .15, a); }
+      ctx.fillStyle = c.c; ell(0, 0, R * .42, R * .42, 0);
+      ctx.fillStyle = c.d;
+      for (let i = 0; i < 22; i++) { const r = Math.sqrt(i / 22) * R * .36, a = i * 2.4; ell(Math.cos(a) * r, Math.sin(a) * r, R * .03, R * .03, 0); }
+    } else if (type === "cosmos") {
+      ctx.fillStyle = c.p;
+      ctx.strokeStyle = "rgba(120,30,80,.18)"; ctx.lineWidth = Math.max(.4, R * .025);
+      for (let i = 0; i < 8; i++) {
+        const a = i * TAU / 8;
+        ctx.save(); ctx.rotate(a);
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.quadraticCurveTo(R * .45, -R * .32, R * .92, -R * .16);
+        ctx.lineTo(R * .84, 0);
+        ctx.lineTo(R * .92, R * .16);
+        ctx.quadraticCurveTo(R * .45, R * .32, 0, 0);
+        ctx.fill(); ctx.stroke();
+        ctx.restore();
+      }
+      ctx.fillStyle = c.c; ell(0, 0, R * .17, R * .17, 0);
+    } else if (type === "tulip") {
+      const g = ctx.createLinearGradient(0, -R * .9, 0, R * .4);
+      g.addColorStop(0, c.a); g.addColorStop(1, c.b);
+      ctx.fillStyle = c.b; ell(0, -R * .3, R * .42, R * .6, 0);
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.moveTo(-R * .52, -R * .8);
+      ctx.quadraticCurveTo(-R * .62, R * .35, 0, R * .4);
+      ctx.quadraticCurveTo(R * .62, R * .35, R * .52, -R * .8);
+      ctx.lineTo(R * .22, -R * .38);
+      ctx.lineTo(0, -R * .9);
+      ctx.lineTo(-R * .22, -R * .38);
+      ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = "rgba(255,255,255,.35)"; ctx.lineWidth = Math.max(.5, R * .04);
+      ctx.beginPath(); ctx.moveTo(0, R * .35); ctx.quadraticCurveTo(-R * .05, -R * .2, 0, -R * .8); ctx.stroke();
+    }
+  }
+
+  /* ================= Scene ================= */
+  let W = 0, H = 0, DPR = 1, GY = 0, K = 1;
+  let hillsFar = [], hillsNear = [], tufts = [], clouds = [], petals = [], butterflies = [];
+  const flowers = [], ripples = [];
+  let planted = store.get("count", 0);
+  const countEl = document.getElementById("count");
+  const paintCount = () => { countEl.textContent = planted > 0 ? `Bạn đã trồng ${planted} bông` : ""; };
+  paintCount();
+
+  const depthS = g => K * (.45 + .75 * g);
+  const yOf = g => GY + g * (H - GY);
+
+  function ridge(base, amp, f1, f2, ph) {
+    const pts = [];
+    for (let x = -10; x <= W + 10; x += 8) pts.push([x, base - amp * (.6 + .4 * Math.sin(x * f1 + ph)) - amp * .35 * Math.sin(x * f2 + ph * 2)]);
+    return pts;
+  }
+
+  function layout() {
+    const r = canvas.getBoundingClientRect();
+    DPR = Math.min(2, window.devicePixelRatio || 1);
+    W = Math.max(1, r.width); H = Math.max(1, r.height);
+    canvas.width = Math.round(W * DPR); canvas.height = Math.round(H * DPR);
+    GY = H * (W < 600 ? .58 : .6);
+    K = clamp(W / 1100, .62, 1);
+    hillsFar = ridge(GY, 46 * K, .004, .011, .8);
+    hillsNear = ridge(GY + 4, 26 * K, .007, .017, 2.1);
+    tufts = Array.from({ length: Math.round(W / 6) }, () => ({ u: Math.random(), g: Math.pow(Math.random(), .8), ph: rand(0, TAU), h: rand(.7, 1.3) }))
+      .sort((a, b) => a.g - b.g);
+    if (!clouds.length) clouds = Array.from({ length: 4 }, (_, i) => ({ u: i / 4 + rand(0, .15), y: rand(.08, .3), s: rand(.7, 1.3), sp: rand(.004, .008) }));
+    if (!petals.length) petals = Array.from({ length: 12 }, () => ({ x: rand(0, 1), y: rand(0, 1), vx: rand(.01, .03), vy: rand(.02, .04), rot: rand(0, TAU), vr: rand(-1, 1), s: rand(.7, 1.2), c: pick(["#f783ac", "#fcc2d7", "#ffffff"]) }));
+    if (!butterflies.length) butterflies = [
+      { ph: 0, sp: .11, c: "#fff3bf", c2: "#f59f00" },
+      { ph: 2.4, sp: .08, c: "#ffffff", c2: "#e64980" }
+    ];
+  }
+
+  function plant(gift, u, g, born, silent) {
+    const T = TYPES[gift.type];
+    flowers.push({
+      u, g, born, type: gift.type, label: gift.short, c: pick(T.colors),
+      h: rand(.85, 1.2), bend: rand(-.18, .18), ph: rand(0, TAU), lean: rand(-.25, .25)
+    });
+    flowers.sort((a, b) => a.g - b.g);
+    if (flowers.length > 140) flowers.splice(0, 1);
+    if (!silent) {
+      ripples.push({ u, g, born });
+      planted++; store.set("count", planted); paintCount();
+      if (!hinted) { hinted = true; hintEl.textContent = "Trồng thêm để nhận lời chúc khác"; }
+      // the full wish appears together with the flower's short label (after it blooms)
+      clearTimeout(showT);
+      showT = setTimeout(() => showWish(gift), LABEL_DELAY * 1000);
+    }
+  }
+
+  const wishEl = document.getElementById("wish");
+  const wishText = document.getElementById("wish-text");
+  const wishName = document.getElementById("wish-name");
+  const wishDot = document.getElementById("wish-dot");
+  const hintEl = document.getElementById("hint");
+  let hinted = false, showT, hideT, goneT;
+  const LABEL_DELAY = 1.45, WISH_HOLD = 5500;
+  function showWish(gift) {
+    const T = TYPES[gift.type];
+    wishName.textContent = T.name + " · Lời chúc cho bạn";
+    wishDot.style.background = T.dot;
+    wishText.textContent = gift.wish;
+    clearTimeout(hideT); clearTimeout(goneT);
+    wishEl.hidden = false;
+    wishEl.classList.remove("pop", "out"); void wishEl.offsetWidth; wishEl.classList.add("pop");
+    burst(T.dot);
+    hideT = setTimeout(() => {
+      wishEl.classList.remove("pop"); wishEl.classList.add("out");
+      goneT = setTimeout(() => { wishEl.hidden = true; wishEl.classList.remove("out"); }, reduce ? 0 : 500);
+    }, WISH_HOLD);
+  }
+
+  function seed() {
+    const now = performance.now() / 1000;
+    const spots = [[.08, .55], [.2, .2], [.33, .75], [.46, .1], [.6, .62], [.72, .25], [.85, .8], [.93, .35], [.27, .95], [.55, .92], [.78, .5]];
+    spots.forEach(([u, g], i) => {
+      const type = TYPE_KEYS[i % TYPE_KEYS.length];
+      plant(giftOf(type), u + rand(-.02, .02), g, now - rand(2.5, 5.5), true);
+    });
+  }
+
+  /* ---------- drawing ---------- */
+  function drawSky(t) {
+    let g = ctx.createLinearGradient(0, 0, 0, GY);
+    g.addColorStop(0, "#bcd7ec"); g.addColorStop(.55, "#e9dcec"); g.addColorStop(1, "#fbe0dc");
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, GY + 2);
+    const sx = W * .82, sy = GY * .3, sr = clamp(W * .05, 34, 64);
+    g = ctx.createRadialGradient(sx, sy, 0, sx, sy, sr * 4);
+    g.addColorStop(0, "rgba(255,246,214,.95)"); g.addColorStop(.25, "rgba(255,236,190,.55)"); g.addColorStop(1, "rgba(255,236,190,0)");
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(sx, sy, sr * 4, 0, TAU); ctx.fill();
+    ctx.fillStyle = "#fff8e6"; ctx.beginPath(); ctx.arc(sx, sy, sr * .55, 0, TAU); ctx.fill();
+    ctx.fillStyle = "rgba(255,255,255,.85)";
+    for (const c of clouds) {
+      const x = (((c.u + t * c.sp * (reduce ? .2 : 1)) % 1.3) - .15) * W, y = c.y * GY, s = c.s * K * 26;
+      ell(x, y, s * 1.6, s * .55, 0); ell(x - s * .9, y + s * .1, s, s * .45, 0); ell(x + s * .8, y + s * .05, s * 1.1, s * .5, 0); ell(x + s * .1, y - s * .35, s * .9, s * .55, 0);
+    }
+  }
+
+  function fillRidge(pts, color, bottom) {
+    ctx.fillStyle = color;
+    ctx.beginPath(); ctx.moveTo(-10, bottom);
+    for (const [x, y] of pts) ctx.lineTo(x, y);
+    ctx.lineTo(W + 10, bottom); ctx.closePath(); ctx.fill();
+  }
+
+  function drawGround(t, wind) {
+    fillRidge(hillsFar, "#c3d6c4", GY + 2);
+    fillRidge(hillsNear, "#a5c79a", GY + 2);
+    const g = ctx.createLinearGradient(0, GY, 0, H);
+    g.addColorStop(0, "#9cc58a"); g.addColorStop(.5, "#7aab68"); g.addColorStop(1, "#4f8446");
+    ctx.fillStyle = g; ctx.fillRect(0, GY, W, H - GY);
+    ctx.lineCap = "round";
+    for (const tf of tufts) {
+      const s = depthS(tf.g), x = tf.u * W, y = yOf(tf.g);
+      const len = 12 * s * tf.h;
+      const sway = (wind * .5 + (reduce ? 0 : Math.sin(t * 1.6 + tf.ph) * .25)) * len;
+      ctx.strokeStyle = tf.g < .5 ? "rgba(70,120,60,.45)" : "rgba(50,100,45,.55)";
+      ctx.lineWidth = Math.max(.7, 1.3 * s);
+      for (let k = -1; k <= 1; k++) {
+        ctx.beginPath(); ctx.moveTo(x + k * 3 * s, y);
+        ctx.quadraticCurveTo(x + k * 4 * s, y - len * .6, x + k * 6 * s + sway, y - len * (1 - Math.abs(k) * .2));
+        ctx.stroke();
+      }
+    }
+  }
+
+  function qpt(x0, y0, cx, cy, x1, y1, p) {
+    const a = 1 - p;
+    return [a * a * x0 + 2 * a * p * cx + p * p * x1, a * a * y0 + 2 * a * p * cy + p * p * y1];
+  }
+  function leaf(x, y, L, rot, color) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(rot);
+    ctx.fillStyle = color;
+    ctx.beginPath(); ctx.moveTo(0, 0);
+    ctx.quadraticCurveTo(L * .5, -L * .38, L, 0);
+    ctx.quadraticCurveTo(L * .5, L * .22, 0, 0);
+    ctx.fill(); ctx.restore();
+  }
+
+  function drawFlower(F, t, wind) {
+    const age = t - F.born;
+    const stemT = easeOut(clamp(age / 1.1, 0, 1));
+    const leafT = easeOutBack(clamp((age - .5) / .6, 0, 1));
+    const bloomT = clamp((age - 1) / .9, 0, 1);
+    const s = depthS(F.g);
+    const x0 = F.u * W, y0 = yOf(F.g);
+    const H0 = 180 * s * F.h * stemT;
+    const sway = (wind * .06 + (reduce ? 0 : Math.sin(t * 1.3 + F.ph) * .03)) * (1 + F.h * .3);
+    const x1 = x0 + (F.bend + sway) * H0, y1 = y0 - H0;
+    const cx = x0 + F.bend * H0 * .2, cy = y0 - H0 * .5;
+
+    // shadow
+    ctx.fillStyle = "rgba(30,60,30,.18)"; ell(x0, y0 + 1, 17 * s, 5 * s, 0);
+    // stem
+    ctx.strokeStyle = "#3f7a3c"; ctx.lineWidth = Math.max(1.6, 5 * s); ctx.lineCap = "round";
+    ctx.beginPath(); ctx.moveTo(x0, y0); ctx.quadraticCurveTo(cx, cy, x1, y1); ctx.stroke();
+    // leaves
+    if (leafT > 0) {
+      const [lx, ly] = qpt(x0, y0, cx, cy, x1, y1, .3);
+      const [rx, ry] = qpt(x0, y0, cx, cy, x1, y1, .5);
+      leaf(lx, ly, 44 * s * leafT, Math.PI + .55, "#4f8a4a");
+      leaf(rx, ry, 37 * s * leafT, -.6, "#5c9a55");
+    }
+    // bud or head
+    const R = 46 * s;
+    F.hx = x1; F.hy = y1 - (F.type === "tulip" ? R * .9 : R * .95); F.bloom = bloomT; F.age = age;
+    ctx.save(); ctx.translate(x1, y1);
+    if (bloomT <= 0) {
+      ctx.fillStyle = "#4f8a4a"; ell(0, -5 * s, 7.5 * s, 11 * s, 0);
+    } else {
+      const k = easeOutBack(bloomT);
+      ctx.rotate(F.type === "tulip" ? sway * .8 : (1 - bloomT) * 1.2 + F.lean * .2);
+      ctx.scale(k, k);
+      if (F.type === "tulip") { ctx.translate(0, -R * .35); }
+      else {
+        ctx.fillStyle = "#4f8a4a"; ell(0, R * .1, R * .32, R * .18, 0); // sepal
+        ctx.scale(1, .92 + F.lean * .1);
+      }
+      drawHead(F.type, F.c, R);
+    }
+    ctx.restore();
+  }
+
+  function drawLabels() {
+    ctx.save();
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    for (const F of flowers) {
+      if (!F.label || F.hx == null || F.bloom < .5) continue;
+      const a = F.age - LABEL_DELAY;
+      const ta = a < .5 ? a / .5 : a < 11 ? 1 : Math.max(0, 1 - (a - 11) / 2.5);
+      if (ta <= 0) continue;
+      const size = Math.round((12 + 5 * F.g) * Math.max(.85, K));
+      ctx.font = `600 ${size}px ${BODY_FONT}`;
+      const w = ctx.measureText(F.label).width + size * 1.2, h = size * 1.9;
+      const x = F.hx, y = F.hy - h / 2 - 6 - 6 * (1 - ta);
+      ctx.globalAlpha = ta;
+      ctx.shadowColor = "rgba(58,34,53,.25)"; ctx.shadowBlur = 10; ctx.shadowOffsetY = 3;
+      ctx.fillStyle = "rgba(255,255,255,.92)";
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(x - w / 2, y - h / 2, w, h, h / 2); else ctx.rect(x - w / 2, y - h / 2, w, h);
+      ctx.fill();
+      ctx.shadowColor = "transparent";
+      ctx.fillStyle = TYPES[F.type].dot;
+      ctx.beginPath(); ctx.moveTo(x - 5, y + h / 2 - .5); ctx.lineTo(x + 5, y + h / 2 - .5); ctx.lineTo(x, y + h / 2 + 5); ctx.closePath();
+      ctx.fillStyle = "rgba(255,255,255,.92)"; ctx.fill();
+      ctx.fillStyle = "#3a2235";
+      ctx.fillText(F.label, x, y + 1);
+    }
+    ctx.restore();
+  }
+
+  function drawRipples(t) {
+    for (let i = ripples.length - 1; i >= 0; i--) {
+      const r = ripples[i], age = t - r.born;
+      if (age > 1.4) { ripples.splice(i, 1); continue; }
+      const s = depthS(r.g), x = r.u * W, y = yOf(r.g);
+      // sparkle burst
+      const n = 8;
+      for (let k = 0; k < n; k++) {
+        const a = k * TAU / n + r.u * 10;
+        const d = (8 + age * 50) * s;
+        ctx.fillStyle = `rgba(255,236,170,${.9 * (1 - age / 1.4)})`;
+        ell(x + Math.cos(a) * d, y - 6 * s + Math.sin(a) * d * .5, 2.2 * s, 2.2 * s, 0);
+      }
+    }
+  }
+
+  function drawPetals(t, dt, wind) {
+    for (const p of petals) {
+      if (!reduce) {
+        p.x += (p.vx + wind * .02) * dt; p.y += p.vy * dt; p.rot += p.vr * dt;
+        if (p.y > 1.05) { p.y = -.05; p.x = rand(-.1, 1); }
+        if (p.x > 1.05) p.x = -.05;
+      }
+      ctx.save(); ctx.translate(p.x * W, p.y * H + Math.sin(t + p.rot) * 6); ctx.rotate(p.rot);
+      ctx.fillStyle = p.c; ctx.globalAlpha = .85;
+      ell(0, 0, 5 * p.s * K, 3 * p.s * K, 0);
+      ctx.restore();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function drawButterflies(t) {
+    for (const b of butterflies) {
+      const tt = t * b.sp * (reduce ? .3 : 1);
+      const x = W * (.5 + .44 * Math.sin(tt * 2 + b.ph));
+      const y = GY * (.55 + .25 * Math.sin(tt * 3.4 + b.ph * 1.7)) + Math.sin(t * 4 + b.ph) * 6;
+      const dir = Math.cos(tt * 2 + b.ph) >= 0 ? 1 : -1;
+      const flap = reduce ? .7 : .25 + .75 * Math.abs(Math.sin(t * 11 + b.ph));
+      const s = 9 * K;
+      ctx.save(); ctx.translate(x, y); ctx.scale(dir, 1);
+      ctx.fillStyle = b.c; ctx.strokeStyle = b.c2; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.ellipse(-s * .5 * flap, -s * .4, s * .9 * flap, s * .75, -.5, 0, TAU); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(s * .5 * flap, -s * .4, s * .9 * flap, s * .75, .5, 0, TAU); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(-s * .35 * flap, s * .35, s * .55 * flap, s * .45, .4, 0, TAU); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(s * .35 * flap, s * .35, s * .55 * flap, s * .45, -.4, 0, TAU); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#3a2235"; ell(0, 0, s * .12, s * .6, 0);
+      ctx.restore();
+    }
+  }
+
+  /* ---------- flower burst behind the wish card ---------- */
+  const confetti = [];
+  const BURST_COLORS = ["#f783ac", "#fcc2d7", "#ffffff", "#ffd43b", "#ff8787", "#da77f2", "#ffc078"];
+  function burst(main) {
+    const now = performance.now() / 1000;
+    const n = reduce ? 18 : 70;
+    const cx = W / 2, cy = H / 2;
+    for (let i = 0; i < n; i++) {
+      const a = rand(0, TAU), sp = rand(220, 620) * K * (reduce ? .4 : 1);
+      confetti.push({
+        x: cx + Math.cos(a) * 40 * K, y: cy + Math.sin(a) * 30 * K,
+        vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - rand(120, 260) * K,
+        rot: rand(0, TAU), vr: rand(-6, 6), s: rand(.7, 1.4) * K,
+        kind: Math.random() < .45 ? "blossom" : "petal",
+        c: Math.random() < .35 ? main : pick(BURST_COLORS),
+        born: now, life: rand(2, 3)
+      });
+    }
+    if (confetti.length > 300) confetti.splice(0, confetti.length - 300);
+  }
+  function drawConfetti(t, dt) {
+    for (let i = confetti.length - 1; i >= 0; i--) {
+      const p = confetti[i], age = t - p.born;
+      if (age > p.life) { confetti.splice(i, 1); continue; }
+      p.vx *= Math.pow(.35, dt); p.vy = p.vy * Math.pow(.35, dt) + 420 * K * dt;
+      p.x += p.vx * dt; p.y += p.vy * dt; p.rot += p.vr * dt;
+      const a = Math.min(1, (p.life - age) / (p.life * .4));
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot); ctx.globalAlpha = a;
+      if (p.kind === "petal") {
+        ctx.fillStyle = p.c; ell(0, 0, 8 * p.s, 4.5 * p.s, 0);
+      } else {
+        const r = 6 * p.s;
+        ctx.fillStyle = p.c;
+        for (let k = 0; k < 5; k++) { const b = k * TAU / 5; ell(Math.cos(b) * r * .75, Math.sin(b) * r * .75, r * .62, r * .62, 0); }
+        ctx.fillStyle = "#ffd43b"; ell(0, 0, r * .4, r * .4, 0);
+      }
+      ctx.restore();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function drawTapHint(t) {
+    const g = .5, s = depthS(g), x = W * .5, y = yOf(g);
+    for (let k = 0; k < 3; k++) {
+      const p = reduce ? (k + 1) / 4 : ((t / 2.2 + k / 3) % 1);
+      const rad = (12 + p * 60) * s;
+      ctx.strokeStyle = `rgba(255,255,255,${.85 * (1 - p)})`;
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.ellipse(x, y, rad, rad * .32, 0, 0, TAU); ctx.stroke();
+    }
+    ctx.fillStyle = "#ffffff"; ell(x, y, 4 * s, 1.5 * s, 0);
+    const a = reduce ? 1 : .7 + .3 * Math.sin(t * 3);
+    ctx.save();
+    ctx.font = `600 ${Math.round(13 + 3 * K)}px ${BODY_FONT}`;
+    ctx.textAlign = "center";
+    ctx.shadowColor = "rgba(30,60,30,.7)"; ctx.shadowBlur = 8;
+    ctx.fillStyle = `rgba(255,255,255,${a})`;
+    ctx.fillText("Chạm vào đây để trồng hoa", x, y - 26 * s - 8);
+    ctx.restore();
+  }
+
+  let last = performance.now() / 1000;
+  function frame(ms) {
+    const t = ms / 1000;
+    const dt = Math.min(.05, t - last); last = t;
+    const wind = reduce ? 0 : Math.sin(t * .6) * .6 + Math.sin(t * 1.7) * .2;
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    drawSky(t);
+    drawGround(t, wind);
+    for (const F of flowers) drawFlower(F, t, wind);
+    drawLabels();
+    drawRipples(t);
+    drawButterflies(t);
+    drawPetals(t, dt, wind);
+    drawConfetti(t, dt);
+    if (!hinted) drawTapHint(t);
+    requestAnimationFrame(frame);
+  }
+
+  /* ---------- input ---------- */
+  canvas.addEventListener("pointerdown", e => {
+    const r = canvas.getBoundingClientRect();
+    const px = e.clientX - r.left, py = e.clientY - r.top;
+    if (py < GY) return; // sky: flowers only grow in the meadow
+    const g = clamp((py - GY) / (H - GY), 0, 1);
+    plant(nextGift(), clamp(px / W, .03, .97), g, performance.now() / 1000, false);
+  });
+  canvas.addEventListener("pointermove", e => {
+    const r = canvas.getBoundingClientRect();
+    canvas.style.cursor = e.clientY - r.top < GY ? "default" : "pointer";
+  });
+  canvas.addEventListener("keydown", e => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      plant(nextGift(), rand(.1, .9), rand(.3, .9), performance.now() / 1000, false);
+    }
+  });
+
+  try { new ResizeObserver(layout).observe(canvas); } catch (e) { addEventListener("resize", layout); }
+  layout();
+  seed();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
