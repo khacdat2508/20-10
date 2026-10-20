@@ -665,7 +665,6 @@ body{
 
   try { new ResizeObserver(layout).observe(canvas); } catch (e) { addEventListener("resize", layout); }
   layout();
-  seed();
   requestAnimationFrame(frame);
 })();
 </script>
